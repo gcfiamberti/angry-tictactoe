@@ -132,8 +132,11 @@
     }
     .shell.centered { text-align: center; }
     .shell.square-center {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center; text-align: center;
+       display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
     }
     .shell.square-center p,
     .shell.square-center .lead,
@@ -145,8 +148,8 @@
     
     #page-instructions .shell {
   padding: 1.1rem 1rem;
+  width: min(100%, 720px);
 }
-
     /* ── Typography ─────────────────────────────────────────────── */
     .eyebrow {
       color: var(--color-primary);
@@ -216,6 +219,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
+  align-items: stretch;    
   gap: 7px;
   padding: 7px;
   border-radius: calc(var(--radius-xl) + 4px);
@@ -224,6 +228,7 @@
   touch-action: manipulation;
 }
    .cell {
+   aspect-ratio: 1 / 1;
   width: 100%;
   height: 100%;
   position: relative;

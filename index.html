@@ -286,7 +286,7 @@
       .lower-pair { grid-template-columns: 1fr; }
       .actions { flex-direction: column; }
       .btn { width: 100%; min-width: unset; }
-      .game-header { justify-content: center; text-align: center; }
+      .game-header { justify-content: left; text-align: left; }
       .board { width: min(88vw, 340px); }
       h2 { margin-bottom: var(--space-2); }
       .shell.hero-panel, .shell.square-center { padding: var(--space-4); }
@@ -415,7 +415,7 @@
       <div class="page-signature right">gaia.fiamberti@imtlucca.it</div>
       <div class="shell centered stack square-center">
         <!-- EDIT THANK YOU TEXT: start -->
-        <div class="eyebrow">Thank you</div>
+        <div class="eyebrow">The end</div>
         <h2 id="thanks-title">Thank you for participating!</h2>
         <p class="lead" id="final-summary">Your responses have been recorded.</p>
         <p class="footer-text">This short website was designed as a fun presentation of the experimental task. If you want to know more, please feel free to contact me!</p>
@@ -731,7 +731,7 @@
         formData.append(GOOGLE_FORM_FIELDS.losses,            String(payload.losses));
         formData.append(GOOGLE_FORM_FIELDS.score,             String(payload.score));
         await fetch(GOOGLE_FORM_ACTION, { method: 'POST', mode: 'no-cors', body: formData });
-        finalSummaryEl.textContent = `Thank you. Your two ratings have been recorded.`;
+        finalSummaryEl.textContent = `Your two ratings have been recorded.`;
         showPage('thanks');
       } catch (error) {
         submitStatusEl.textContent = 'Submission failed on this device. Please check the Google Form configuration and internet connection.';

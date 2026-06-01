@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Feeling Gendered Tic-Tac-Toe</title>
+  <meta name="description" content="ESCAN demo website for a social neuroscience tic tac toe experiment." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7fbff;
+      --color-surface: #ffffff;
+      --color-surface-2: #eef5fd;
+      --color-surface-offset: #e4eef9;
+      --color-border: #bfd2e8;
+      --color-divider: #d8e4f1;
+      --color-text: #12304d;
+      --color-text-muted: #4d6983;
+      --color-text-faint: #7c93aa;
+      --color-text-inverse: #f8fbff;
+      --color-primary: #0b5fa5;
+      --color-primary-hover: #084d87;
+      --color-primary-active: #073861;
+      --color-primary-highlight: #d9e8f8;
+      --color-success: #1f8a4c;
+      --color-error: #c43d3d;
+      --radius-sm: 0.375rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.5rem;
+      --radius-full: 9999px;
+      --shadow-sm: 0 2px 10px rgba(11, 95, 165, 0.06);
+      --shadow-md: 0 10px 30px rgba(11, 95, 165, 0.12);
+      --content-default: 960px;
+      --font-body: 'IBM Plex Sans', 'Arial', sans-serif;
+      --font-display: 'IBM Plex Sans', 'Arial', sans-serif;
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: none; text-size-adjust: none; scroll-behavior: smooth; }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--color-text);
+      background:
+        radial-gradient(circle at top left, rgba(11,95,165,0.10), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(11,95,165,0.08), transparent 24%),
+        var(--color-bg);
+    }
+    img, svg { display: block; max-width: 100%; height: auto; }
+    button, input { font: inherit; }
+    button {
+      cursor: pointer;
+      border: 0;
+      transition: transform var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .page {
+      min-height: 100dvh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(var(--space-6), 5vw, var(--space-12));
+      position: relative;
+      overflow: hidden;
+    }
+    .page-frame {
+      width: min(100%, var(--content-default));
+      display: grid;
+      gap: var(--space-5);
+      position: relative;
+      z-index: 1;
+    }
+    .welcome-stack {
+      grid-template-rows: auto auto;
+    }
+    .lower-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+    .page.active { display: flex; }
+    .corner-image {
+      position: absolute;
+      width: clamp(72px, 10vw, 140px);
+      opacity: 0.92;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .corner-image.top-left { top: 18px; left: 18px; }
+    .corner-image.top-right { top: 18px; right: 18px; }
+    .page-signature {
+      position: absolute;
+      bottom: 18px;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      z-index: 1;
+    }
+    .page-signature.left { left: 18px; }
+    .page-signature.right { right: 18px; text-align: right; }
+    .shell {
+      width: 100%;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(18,48,77,0.10);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      padding: clamp(var(--space-6), 4vw, var(--space-12));
+      position: relative;
+    }
+    .shell.centered { text-align: center; }
+    .shell.square-center {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .shell.square-center p, .shell.square-center .lead, .shell.square-center .footer-text {
+      margin-inline: auto;
+      text-align: center;
+    }
+    .shell.hero-panel {
+      min-height: 330px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .eyebrow {
+      color: var(--color-primary);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-3);
+    }
+    h1, h2 {
+      font-family: var(--font-display);
+      line-height: 1.12;
+      text-wrap: balance;
+      margin-bottom: var(--space-4);
+    }
+    h1 { font-size: var(--text-2xl); }
+    h2 { font-size: var(--text-xl); }
+    p { max-width: 68ch; color: var(--color-text-muted); }
+    .lead { font-size: var(--text-lg); color: var(--color-text); margin-inline: auto; }
+    .stack { display: grid; gap: var(--space-4); }
+    .actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: var(--space-6);
+    }
+    .btn {
+      min-height: 48px;
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      min-width: 160px;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-secondary {
+      background: var(--color-primary-highlight);
+      color: var(--color-primary-active);
+    }
+    .meta-grid {
+      display: grid;
+      gap: var(--space-4);
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: var(--space-6);
+      text-align: left;
+    }
+    .card {
+      background: var(--color-surface-2);
+      border: 1px solid rgba(18,48,77,0.10);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+    }
+    .card strong { display: block; margin-bottom: var(--space-2); color: var(--color-text); }
+    .field { display: grid; gap: var(--space-2); text-align: left; }
+    label { font-weight: 600; color: var(--color-text); }
+    input[type="text"] {
+      width: 100%;
+      min-height: 48px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      padding: 0.85rem 1rem;
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+    .error { color: var(--color-error); min-height: 1.5em; font-size: var(--text-sm); }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+      flex-wrap: wrap;
+    }
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0.7rem 1rem;
+      background: var(--color-primary-highlight);
+      color: var(--color-primary-active);
+      border-radius: var(--radius-full);
+      font-weight: 700;
+    }
+    .status {
+      min-height: 1.8em;
+      color: var(--color-primary);
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+      text-align: center;
+    }
+    .trial-label {
+      color: var(--color-text-muted);
+      text-align: center;
+      margin-top: var(--space-4);
+      font-weight: 600;
+    }
+    .board-wrap {
+      display: grid;
+      justify-content: center;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .board {
+      width: min(88vw, 420px);
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 8px;
+      border-radius: calc(var(--radius-xl) + 4px);
+      background: linear-gradient(180deg, #dbe9f8, #cfe2f5);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), var(--shadow-md);
+      touch-action: manipulation;
+    }
+    .cell {
+      position: relative;
+      border-radius: var(--radius-lg);
+      background: white;
+      border: 1px solid rgba(11,95,165,0.14);
+      display: grid;
+      place-items: center;
+      font-size: clamp(2rem, 10vw, 4rem);
+      font-weight: 700;
+      color: var(--color-text);
+      min-height: 96px;
+    }
+    .cell:active { transform: scale(0.985); }
+    .cell small { display: none; }
+    .cell.occupied small { display: none; }
+    .cell.player { color: var(--color-primary); }
+    .cell.computer { color: #46627f; }
+    .result-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      text-align: center;
+      background: rgba(247,251,255,0.92);
+      border-radius: calc(var(--radius-xl) + 4px);
+      padding: var(--space-6);
+    }
+    .result-overlay.visible { display: grid; }
+    .result-message { font-size: var(--text-xl); font-weight: 700; }
+    .result-message.win { color: var(--color-success); }
+    .result-message.loss { color: var(--color-error); }
+    .result-message.draw { color: var(--color-text); }
+    .result-points { font-size: var(--text-lg); font-weight: 700; margin-top: var(--space-2); }
+
+    .sliders { display: grid; gap: var(--space-6); margin-top: var(--space-6); }
+    .slider-card {
+      background: var(--color-surface-2);
+      border: 1px solid rgba(18,48,77,0.10);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    .slider-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-bottom: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .slider-value { font-weight: 700; color: var(--color-primary); }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--color-primary);
+      min-height: 44px;
+    }
+    .range-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin-top: var(--space-2);
+    }
+    .note {
+      margin-top: var(--space-4);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+    .footer-text { margin-inline: auto; }
+    .tiny { font-size: var(--text-sm); color: var(--color-text-faint); }
+
+    @media (max-width: 640px) {
+      .shell { padding: var(--space-5); }
+      .game-header { justify-content: center; text-align: center; }
+      .board { width: min(92vw, 360px); }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .corner-image { width: 62px; opacity: 0.82; }
+      .lower-pair { grid-template-columns: 1fr; }
+      .page-signature { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="page active" id="page-welcome" aria-labelledby="welcome-title">
+      <img class="corner-image top-left" src="./assets/API_transparent.svg" alt="API logo" width="140" height="140" loading="lazy">
+      <img class="corner-image top-right" src="./assets/Logo_IMT_School_vertical.jpg" alt="IMT School logo" width="140" height="95" loading="lazy">
+      <div class="page-signature left">G. C. Fiamberti</div>
+      <div class="page-signature right">gaia.fiamberti@imtlucca.it</div>
+      <div class="page-frame welcome-stack">
+        <div class="shell hero-panel">
+          <!-- EDIT WELCOME TOP TEXT: start -->
+          <div class="eyebrow">ESCAN 2026 - Rome</div>
+          <h1 id="welcome-title">Tic-tac-toe: <br> a piece of cake or a piece of work?</h1>
+          <p class="lead">This website shows the task presented to my partcipants. <br> Try it yourself for a full experience.</p>
+          <!-- EDIT WELCOME TOP TEXT: end -->
+        </div>
+        <div class="lower-pair">
+          <div class="shell square-center">
+            <!-- EDIT WELCOME LOWER LEFT TEXT: start -->
+            <h2>What to expect</h2>
+            <p>The game includes 10 tic tac toe matches and in the end two rating sliders</p>
+            <!-- EDIT WELCOME LOWER LEFT TEXT: end -->
+          </div>
+          <div class="shell square-center">
+            <!-- EDIT WELCOME LOWER RIGHT TEXT: start -->
+            <h2>To proceed</h2>
+            <p>In the next page you can read the instructions and start when you are ready. The experience is optimized for smartphone touch input.</p>
+            <div class="actions">
+              <button class="btn btn-primary" id="go-instructions">Continue</button>
+            </div>
+            <!-- EDIT WELCOME LOWER RIGHT TEXT: end -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-instructions" aria-labelledby="instructions-title">
+      <img class="corner-image top-left" src="./assets/API_transparent.svg" alt="API logo" width="140" height="140" loading="lazy">
+      <img class="corner-image top-right" src="./assets/Logo_IMT_School_vertical.jpg" alt="IMT School logo" width="140" height="95" loading="lazy">
+      <div class="page-signature left">G. C. Fiamberti</div>
+      <div class="page-signature right">gaia.fiamberti@imtlucca.it</div>
+      <div class="shell stack centered square-center">
+        <!-- EDIT INSTRUCTIONS TEXT: start -->
+        <div class="eyebrow">Instructions</div>
+        <h2 id="instructions-title">Welcome</h2>
+        <p>Thank you for taking part in this fun experience. <br> You will now play tic tac toe against the computer on a 3×3 grid.</p>
+        <p>You are <strong>X</strong> and the computer is O. Tap an empty square to place your symbol. The winner is the first player to complete three symbols in a row, column, or diagonal.</p>
+        <p>You will play 10 matches. You earn 1 point for each win and lose 1 point for each loss.</p>
+        <p>After the game you will answer two simple questions about how you felt playing this game.</p>
+        <!-- EDIT INSTRUCTIONS TEXT: end -->
+        <div class="actions">
+          <button class="btn btn-secondary" id="back-welcome">Back</button>
+          <button class="btn btn-primary" id="start-game">Start the game</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-game" aria-labelledby="game-title">
+      <div class="shell">
+        <div class="game-header">
+          <div>
+            <div class="eyebrow">Game</div>
+            <h2 id="game-title">Tic tac toe</h2>
+          </div>
+          <div class="score-pill" id="score-pill">Wins: 0 · Losses: 0 · Score: 0</div>
+        </div>
+        <div id="status" class="status" aria-live="polite">Your turn.</div>
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="Tic tac toe board"></div>
+          <div class="result-overlay" id="result-overlay" aria-live="polite">
+            <div>
+              <div class="result-message" id="result-message"></div>
+              <div class="result-points" id="result-points"></div>
+            </div>
+          </div>
+        </div>
+        <div class="trial-label" id="trial-label">Game 1/10</div>
+      </div>
+    </section>
+
+    <section class="page" id="page-feedback" aria-labelledby="feedback-title">
+      <img class="corner-image top-left" src="./assets/API_transparent.svg" alt="API logo" width="140" height="140" loading="lazy">
+      <img class="corner-image top-right" src="./assets/Logo_IMT_School_vertical.jpg" alt="IMT School logo" width="140" height="95" loading="lazy">
+      <div class="page-signature left">G. C. Fiamberti</div>
+      <div class="page-signature right">gaia.fiamberti@imtlucca.it</div>
+      <div class="shell stack centered">
+        <!-- EDIT FEEDBACK PAGE TEXT: start -->
+        <div class="eyebrow">Feedback</div>
+        <h2 id="feedback-title" style="text-align: center;">How did the game feel?</h2>
+	<p style="text-align: center;">Please use the sliders below to report your experience.</p>
+        <!-- EDIT FEEDBACK PAGE TEXT: end -->
+        <div class="sliders">
+          <div class="slider-card">
+            <div class="slider-head">
+              <!-- EDIT SLIDER 1 LABEL: start --><label for="enjoyment">How much did you enjoy the game?</label><!-- EDIT SLIDER 1 LABEL: end -->
+              <span class="slider-value" id="enjoyment-value">50</span>
+            </div>
+            <input id="enjoyment" type="range" min="0" max="100" value="50" />
+            <div class="range-scale"><span>Not at all</span><span>Very much</span></div>
+          </div>
+          <div class="slider-card">
+            <div class="slider-head">
+              <!-- EDIT SLIDER 2 LABEL: start --><label for="frustration">How frustrated did you feel?</label><!-- EDIT SLIDER 2 LABEL: end -->
+              <span class="slider-value" id="frustration-value">50</span>
+            </div>
+            <input id="frustration" type="range" min="0" max="100" value="50" />
+            <div class="range-scale"><span>Not at all</span><span>Very much</span></div>
+          </div>
+        </div>
+        <div id="submit-status" class="error" aria-live="polite"></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="submit-feedback">Submit ratings</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-thanks" aria-labelledby="thanks-title">
+      <img class="corner-image top-left" src="./assets/API_transparent.svg" alt="API logo" width="140" height="140" loading="lazy">
+      <img class="corner-image top-right" src="./assets/Logo_IMT_School_vertical.jpg" alt="IMT School logo" width="140" height="95" loading="lazy">
+      <div class="page-signature left">G. C. Fiamberti</div>
+      <div class="page-signature right">gaia.fiamberti@imtlucca.it</div>
+      <div class="shell centered stack square-center">
+        <!-- EDIT THANK YOU TEXT: start -->
+        <div class="eyebrow">The end</div>
+        <h2 id="thanks-title">Thank you for participating!</h2>
+        <p class="lead" id="final-summary">Your responses have been recorded.</p>
+        <p class="footer-text">This short website was designed as a fun presentation of the experimental task. <br> If you want to know more, please feel free to contact me! <br> <strong>gaia.fiamberti@imtlucca.it</strong></p>
+        <!-- EDIT THANK YOU TEXT: end -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ============================================================
+    // GAME CONFIGURATION — edit these values if needed
+    // ============================================================
+    const TOTAL_TRIALS = 10;          // Total number of games
+    const DECEPTION_TRIALS_COUNT = 6; // How many of those are deceptive
+    // Computer skill: probability (0–1) of making a smart move (win/block).
+    // 0.6 = 60% smart, 40% random. Raise to make it harder, lower to make it easier.
+    const COMPUTER_SMART_PROB = 0.6;
+    // ============================================================
+
+    const NUMPAD_ORDER = [7,8,9,4,5,6,1,2,3];
+
+    const pages = {
+      welcome:      document.getElementById('page-welcome'),
+      instructions: document.getElementById('page-instructions'),
+      game:         document.getElementById('page-game'),
+      feedback:     document.getElementById('page-feedback'),
+      thanks:       document.getElementById('page-thanks')
+    };
+
+    const boardEl          = document.getElementById('board');
+    const statusEl         = document.getElementById('status');
+    const trialLabelEl     = document.getElementById('trial-label');
+    const scorePillEl      = document.getElementById('score-pill');
+    const resultOverlayEl  = document.getElementById('result-overlay');
+    const resultMessageEl  = document.getElementById('result-message');
+    const resultPointsEl   = document.getElementById('result-points');
+    const enjoymentEl      = document.getElementById('enjoyment');
+    const frustrationEl    = document.getElementById('frustration');
+    const enjoymentValueEl = document.getElementById('enjoyment-value');
+    const frustrationValueEl = document.getElementById('frustration-value');
+    const submitStatusEl   = document.getElementById('submit-status');
+    const finalSummaryEl   = document.getElementById('final-summary');
+
+    // ============================================================
+    // GOOGLE FORM — paste your real values here before publishing
+    // ============================================================
+    const GOOGLE_FORM_ACTION = 'PASTE_YOUR_GOOGLE_FORM_ACTION_URL_HERE';
+    const GOOGLE_FORM_FIELDS = {
+      participantNumber: 'entry.REPLACE_NUMBER_FIELD',
+      enjoyment:         'entry.REPLACE_ENJOYMENT_FIELD',
+      frustration:       'entry.REPLACE_FRUSTRATION_FIELD',
+      wins:              'entry.REPLACE_WINS_FIELD',
+      losses:            'entry.REPLACE_LOSSES_FIELD',
+      score:             'entry.REPLACE_SCORE_FIELD'
+    };
+    // ============================================================
+
+    // Game state
+    const state = {
+      participantNumber: 0,
+      board:             Array(9).fill(' '),
+      trialNum:          1,
+      gamesWon:          0,
+      gamesLost:         0,
+      boardDisabled:     false,
+      actualDeceptionCount: 0,
+      resultMessage:     '',
+      deceptionTrials:   []   // which trial numbers are deceptive
+    };
+
+    // ── Helpers ──────────────────────────────────────────────────
+
+    function showPage(name) {
+      Object.values(pages).forEach(p => p.classList.remove('active'));
+      pages[name].classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function randomSample(arr, count) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy.slice(0, count);
+    }
+
+    function chooseRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // ── Board logic ──────────────────────────────────────────────
+
+    function winCombos() {
+      return [[6,7,8],[3,4,5],[0,1,2],[6,3,0],[7,4,1],[8,5,2],[6,4,2],[0,4,8]];
+    }
+
+    function checkWinner(board, player) {
+      return winCombos().some(combo => combo.every(i => board[i] === player));
+    }
+
+    function getAvailableMoves(board) {
+      return board.map((c, i) => c === ' ' ? i : null).filter(v => v !== null);
+    }
+
+    function isDraw(board) {
+      return board.every(c => c !== ' ') && !checkWinner(board, 'X') && !checkWinner(board, 'O');
+    }
+
+    function findWinningMove(board, player) {
+      for (const idx of getAvailableMoves(board)) {
+        const copy = [...board]; copy[idx] = player;
+        if (checkWinner(copy, player)) return idx;
+      }
+      return null;
+    }
+
+    function canPlayerStillWin(board, player) {
+      const opp = player === 'X' ? 'O' : 'X';
+      return winCombos().some(combo => combo.every(i => board[i] !== opp));
+    }
+
+    // Minimax: returns true if computer (O) can force a win from this board state
+    function computerCanForceWin(board) {
+      function mm(b, turn) {
+        if (checkWinner(b, 'O')) return  1;
+        if (checkWinner(b, 'X')) return -1;
+        if (isDraw(b))           return  0;
+        const moves = getAvailableMoves(b);
+        if (turn === 'O') {
+          let best = -2;
+          for (const idx of moves) {
+            const b2 = [...b]; b2[idx] = 'O';
+            best = Math.max(best, mm(b2, 'X'));
+            if (best === 1) break;
+          }
+          return best;
+        } else {
+          let best = 2;
+          for (const idx of moves) {
+            const b2 = [...b]; b2[idx] = 'X';
+            best = Math.min(best, mm(b2, 'O'));
+            if (best === -1) break;
+          }
+          return best;
+        }
+      }
+      return mm(board, 'O') === 1;
+    }
+
+    // ── Deception logic ──────────────────────────────────────────
+    //
+    // Deception fires ONLY on the LAST move of a trial — meaning the move
+    // that would immediately end the game (win or forced draw on final cell).
+    //
+    // Method A (primary): player's move would win the game →
+    //   redirect X to a cell that does NOT let player win,
+    //   preferring cells where the computer can then force a win.
+    //   Falls back to any non-winning cell, then any other cell.
+    //
+    // Method B (fallback): player is blocking the computer's winning move
+    //   AND this is genuinely the last meaningful move (only one empty cell
+    //   remains after this, or the board would be full) →
+    //   redirect X elsewhere, letting the computer win.
+    //
+    // Returns the redirected index, or null if deception does not apply.
+
+    function applyDeception(idx) {
+      const available = getAvailableMoves(state.board);
+
+      // ---- Method A: this move would win the game for the player ----
+      const boardIfPlaced = [...state.board]; boardIfPlaced[idx] = 'X';
+      const aboutToWin = checkWinner(boardIfPlaced, 'X');
+
+      if (aboutToWin) {
+        // Prefer: redirect to a cell that does NOT win AND lets computer force win
+        const winFakes = available.filter(fi => {
+          if (fi === idx) return false;
+          const fb = [...state.board]; fb[fi] = 'X';
+          return !checkWinner(fb, 'X') && computerCanForceWin(fb);
+        });
+        if (winFakes.length) return chooseRandom(winFakes);
+
+        // Fallback: any cell that does not immediately win
+        const nonWin = available.filter(fi => {
+          if (fi === idx) return false;
+          const fb = [...state.board]; fb[fi] = 'X';
+          return !checkWinner(fb, 'X');
+        });
+        if (nonWin.length) return chooseRandom(nonWin);
+
+        // Last resort: any other cell
+        const others = available.filter(fi => fi !== idx);
+        if (others.length) return chooseRandom(others);
+
+        return null;
+      }
+
+      // ---- Method B: player is blocking computer's winning move,
+      //      AND this is the last move that matters (only 1 empty cell left
+      //      after placement, meaning the board ends next turn regardless) ----
+      const computerWin = findWinningMove(state.board, 'O');
+      const isBlocking  = (computerWin === idx);
+      // "Last move" condition: after placing, only 0 or 1 empty cells remain
+      const emptiesAfter = available.length - 1; // available includes idx
+      const isLastMeaningfulMove = emptiesAfter <= 1;
+
+      if (isBlocking && isLastMeaningfulMove) {
+        const nonBlocking = available.filter(fi => fi !== idx);
+        if (nonBlocking.length) return chooseRandom(nonBlocking);
+        return null;
+      }
+
+      // Condition not met — no deception on this move
+      return null;
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────
+
+    function updateScorePill() {
+      const score = Math.max(0, state.gamesWon - state.gamesLost);
+      scorePillEl.textContent = `Wins: ${state.gamesWon} · Losses: ${state.gamesLost} · Score: ${score}`;
+    }
+
+    function updateTrialLabel() {
+      trialLabelEl.textContent =
+        state.trialNum > TOTAL_TRIALS
+          ? 'Game finished!'
+          : `Game ${state.trialNum}/${TOTAL_TRIALS}`;
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      state.board.forEach((value, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `cell ${value === 'X' ? 'player' : value === 'O' ? 'computer' : ''} ${value !== ' ' ? 'occupied' : ''}`;
+        btn.setAttribute('role', 'gridcell');
+        btn.setAttribute('aria-label',
+          value === ' ' ? `Empty cell` : `Cell marked ${value}`);
+        btn.disabled = state.boardDisabled || value !== ' ' || state.trialNum > TOTAL_TRIALS;
+        btn.dataset.index = index;
+        btn.innerHTML = `${value === ' ' ? '' : value}`;
+        btn.addEventListener('click', () => playerMove(index));
+        boardEl.appendChild(btn);
+      });
+    }
+
+    function showResultOverlay(message) {
+      resultMessageEl.textContent = message;
+      resultMessageEl.className = 'result-message';
+      resultPointsEl.textContent = '';
+      if (message === 'You won!') {
+        resultMessageEl.classList.add('win');
+        resultPointsEl.textContent = '+1 point';
+        resultPointsEl.style.color = 'var(--color-success)';
+      } else if (message === 'You lost!') {
+        resultMessageEl.classList.add('loss');
+        resultPointsEl.textContent = '-1 point';
+        resultPointsEl.style.color = 'var(--color-error)';
+      } else {
+        resultMessageEl.classList.add('draw');
+      }
+      resultOverlayEl.classList.add('visible');
+    }
+
+    function hideResultOverlay() {
+      resultOverlayEl.classList.remove('visible');
+    }
+
+    function resetBoard() {
+      state.board       = Array(9).fill(' ');
+      state.boardDisabled = false;
+      state.resultMessage = '';
+      statusEl.textContent = 'Your turn.';
+      hideResultOverlay();
+      updateTrialLabel();
+      renderBoard();
+    }
+
+    // ── Turn resolution ───────────────────────────────────────────
+
+    function finishTurn(player) {
+      if (checkWinner(state.board, player)) {
+        endTrial(player === 'X' ? 'You won!' : 'You lost!');
+        return true;
+      }
+      if (isDraw(state.board)) { endTrial('Draw!'); return true; }
+      if (!canPlayerStillWin(state.board, 'X') && !canPlayerStillWin(state.board, 'O')) {
+        endTrial('Draw!'); return true;
+      }
+      const avail = getAvailableMoves(state.board);
+      if (avail.length === 1 && !checkWinner(state.board, 'X') && !checkWinner(state.board, 'O')) {
+        endTrial('Draw!'); return true;
+      }
+      return false;
+    }
+
+    function computerTurn() {
+      state.boardDisabled = true;
+      renderBoard();
+      if (state.trialNum > TOTAL_TRIALS) return;
+
+      const available = getAvailableMoves(state.board);
+      if (!available.length) return;
+
+      let idx = null;
+      // COMPUTER_SMART_PROB chance to play optimally (win or block), else random
+      if (Math.random() < COMPUTER_SMART_PROB) {
+        idx = findWinningMove(state.board, 'O');
+        if (idx === null) idx = findWinningMove(state.board, 'X');
+      }
+      if (idx === null) idx = chooseRandom(available);
+
+      state.board[idx] = 'O';
+      renderBoard();
+      if (!finishTurn('O')) {
+        state.boardDisabled = false;
+        statusEl.textContent = 'Your turn.';
+        renderBoard();
+      }
+    }
+
+    function playerMove(idx) {
+      if (state.board[idx] !== ' ' || state.boardDisabled || state.trialNum > TOTAL_TRIALS) return;
+
+      state.boardDisabled = true;
+      statusEl.textContent = 'Computer is thinking…';
+
+      const isDeceptiveTrial = state.deceptionTrials.includes(state.trialNum);
+      let placedIdx = idx;
+
+      if (isDeceptiveTrial && state.actualDeceptionCount < DECEPTION_TRIALS_COUNT) {
+        const redirected = applyDeception(idx);
+        if (redirected !== null) {
+          placedIdx = redirected;
+          state.actualDeceptionCount += 1;
+        }
+      }
+
+      state.board[placedIdx] = 'X';
+      renderBoard();
+      if (!finishTurn('X')) {
+        setTimeout(computerTurn, 900);
+      }
+    }
+
+    function endTrial(message) {
+      state.resultMessage  = message;
+      state.boardDisabled  = true;
+      statusEl.textContent = '';
+
+      if      (message === 'You won!')  state.gamesWon  += 1;
+      else if (message === 'You lost!') state.gamesLost += 1;
+
+      updateScorePill();
+      showResultOverlay(message);
+      renderBoard();
+
+      const completed = state.trialNum;
+      setTimeout(() => {
+        state.trialNum += 1;
+        if (state.trialNum <= TOTAL_TRIALS) {
+          resetBoard();
+        } else {
+          goToFeedback();
+        }
+      }, 2000);
+    }
+
+    // ── Navigation ────────────────────────────────────────────────
+
+    function startExperiment() {
+      state.participantNumber = (typeof window._sessionParticipantNumber === 'undefined')
+        ? 1
+        : window._sessionParticipantNumber + 1;
+      window._sessionParticipantNumber = state.participantNumber;
+
+      // Pick which trials are deceptive (any of the 10 trials)
+      const allTrials = Array.from({ length: TOTAL_TRIALS }, (_, i) => i + 1);
+      state.deceptionTrials = randomSample(allTrials, DECEPTION_TRIALS_COUNT);
+
+      // Reset counters for new session
+      state.trialNum             = 1;
+      state.gamesWon             = 0;
+      state.gamesLost            = 0;
+      state.actualDeceptionCount = 0;
+      state.board                = Array(9).fill(' ');
+
+      showPage('game');
+      updateScorePill();
+      resetBoard();
+    }
+
+    function goToFeedback() {
+      enjoymentEl.value   = 50;
+      frustrationEl.value = 50;
+      updateSliderDisplays();
+      showPage('feedback');
+    }
+
+    function updateSliderDisplays() {
+      enjoymentValueEl.textContent   = enjoymentEl.value;
+      frustrationValueEl.textContent = frustrationEl.value;
+    }
+
+    async function submitFeedback() {
+      submitStatusEl.textContent = '';
+      const payload = {
+        participantNumber: state.participantNumber,
+        enjoyment:  enjoymentEl.value,
+        frustration: frustrationEl.value,
+        wins:   state.gamesWon,
+        losses: state.gamesLost,
+        score:  Math.max(0, state.gamesWon - state.gamesLost)
+      };
+
+      const isPlaceholder = GOOGLE_FORM_ACTION.includes('PASTE_YOUR_GOOGLE_FORM_ACTION_URL_HERE');
+      if (isPlaceholder) {
+        submitStatusEl.textContent =
+          'Google Form is not configured yet — data cannot be saved. The game works correctly; connect your Google Form before the conference.';
+        finalSummaryEl.textContent =
+          `Session complete. Final score: ${payload.score}. Note: the Google Form connection has not been configured yet — ratings were not saved.`;
+        showPage('thanks');
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append(GOOGLE_FORM_FIELDS.participantNumber, String(payload.participantNumber));
+        formData.append(GOOGLE_FORM_FIELDS.enjoyment,         payload.enjoyment);
+        formData.append(GOOGLE_FORM_FIELDS.frustration,       payload.frustration);
+        formData.append(GOOGLE_FORM_FIELDS.wins,              String(payload.wins));
+        formData.append(GOOGLE_FORM_FIELDS.losses,            String(payload.losses));
+        formData.append(GOOGLE_FORM_FIELDS.score,             String(payload.score));
+
+        await fetch(GOOGLE_FORM_ACTION, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: formData
+        });
+
+        finalSummaryEl.textContent = `Thank you. Your two ratings have been recorded.`;
+        showPage('thanks');
+      } catch (error) {
+        submitStatusEl.textContent =
+          'Submission failed on this device. Please check the Google Form configuration and internet connection.';
+      }
+    }
+
+    // ── Event listeners ───────────────────────────────────────────
+
+    document.getElementById('go-instructions').addEventListener('click', () => showPage('instructions'));
+    document.getElementById('back-welcome').addEventListener('click',    () => showPage('welcome'));
+    document.getElementById('start-game').addEventListener('click',      startExperiment);
+    document.getElementById('submit-feedback').addEventListener('click', submitFeedback);
+    enjoymentEl.addEventListener('input',   updateSliderDisplays);
+    frustrationEl.addEventListener('input', updateSliderDisplays);
+
+    // ── Init ──────────────────────────────────────────────────────
+    updateSliderDisplays();
+    updateScorePill();
+    updateTrialLabel();
+    renderBoard();
+  </script>
+</body>
+</html>
